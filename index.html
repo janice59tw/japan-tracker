@@ -318,10 +318,11 @@ textarea.form-input { resize: none; }
 
         <div class="mb12">
           <label class="form-label">誰的消費</label>
-          <div class="toggle-group">
+          <div class="toggle-group wrap">
             <div class="toggle-btn active-purple" id="per-共同" onclick="setPer('共同')">共同</div>
             <div class="toggle-btn" id="per-小言" onclick="setPer('小言')">小言</div>
             <div class="toggle-btn" id="per-Janice" onclick="setPer('Janice')">Janice</div>
+            <div class="toggle-btn" id="per-大家" onclick="setPer('大家')">大家</div>
           </div>
         </div>
 
@@ -339,7 +340,7 @@ textarea.form-input { resize: none; }
       <div class="filter-bar">
         <select class="filter-sel" id="fil-per" onchange="renderDetail()">
           <option value="">全部人</option>
-          <option>共同</option><option>小言</option><option>Janice</option>
+          <option>共同</option><option>小言</option><option>Janice</option><option>大家</option>
         </select>
         <select class="filter-sel" id="fil-cat" onchange="renderDetail()">
           <option value="">全部類別</option>
@@ -528,7 +529,7 @@ function setPay(p) {
 
 function setPer(p) {
   curPerson = p;
-  ['共同','小言','Janice'].forEach(x => {
+  ['共同','小言','Janice','大家'].forEach(x => {
     document.getElementById('per-'+x).className = 'toggle-btn' + (x===p?' active-purple':'');
   });
 }
@@ -696,7 +697,7 @@ function renderAnalysis() {
   ].map(([n,v])=>`<div class="stat-row"><span class="stat-name">${n}</span><span class="stat-val">${v}</span></div>`).join('');
 
   // Person stats
-  const perT = {'共同':0,'小言':0,'Janice':0};
+  const perT = {'共同':0,'小言':0,'Janice':0,'大家':0};
   entries.forEach(e=>{ perT[e.person]=(perT[e.person]||0)+toJPY(e); });
   document.getElementById('per-stats').innerHTML = Object.entries(perT)
     .map(([n,v])=>`<div class="stat-row"><span class="stat-name">${n}</span><span class="stat-val">¥${v.toLocaleString()}</span></div>`).join('');
