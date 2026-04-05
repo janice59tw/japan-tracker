@@ -191,6 +191,13 @@ textarea.form-input { resize: none; }
 .mb8 { margin-bottom: 8px; }
 .mb12 { margin-bottom: 12px; }
 .mb16 { margin-bottom: 16px; }
+
+/* EDIT MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; justify-content: center; }
+.modal-box { background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px 32px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; border-top: 0.5px solid var(--border2); }
+.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+.modal-close { font-size: 22px; cursor: pointer; color: var(--text3); padding: 4px 8px; }
+.entry-note-toggle { font-size: 11px; color: var(--blue); cursor: pointer; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -322,7 +329,7 @@ textarea.form-input { resize: none; }
             <div class="toggle-btn active-purple" id="per-共同" onclick="setPer('共同')">共同</div>
             <div class="toggle-btn" id="per-小言" onclick="setPer('小言')">小言</div>
             <div class="toggle-btn" id="per-Janice" onclick="setPer('Janice')">Janice</div>
-            <div class="toggle-btn" id="per-大家" onclick="setPer('大家')">大家</div>
+            <div class="toggle-btn" id="per-朋友" onclick="setPer('朋友')">朋友</div>
           </div>
         </div>
 
@@ -340,7 +347,7 @@ textarea.form-input { resize: none; }
       <div class="filter-bar">
         <select class="filter-sel" id="fil-per" onchange="renderDetail()">
           <option value="">全部人</option>
-          <option>共同</option><option>小言</option><option>Janice</option><option>大家</option>
+          <option>共同</option><option>小言</option><option>Janice</option><option>朋友</option>
         </select>
         <select class="filter-sel" id="fil-cat" onchange="renderDetail()">
           <option value="">全部類別</option>
@@ -437,6 +444,73 @@ textarea.form-input { resize: none; }
 
 <div class="toast" id="toast"></div>
 
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="closeEditIfOutside(event)">
+  <div class="modal-box" id="edit-modal-box">
+    <div class="modal-title">
+      <span>編輯記帳</span>
+      <span class="modal-close" onclick="closeEdit()">✕</span>
+    </div>
+    <div class="mb12">
+      <label class="form-label">消費名稱</label>
+      <input class="form-input" id="e-name" type="text">
+    </div>
+    <div class="mb8">
+      <label class="form-label">金額幣別</label>
+      <div class="toggle-group mb12">
+        <div class="toggle-btn active-red" id="e-cur-jpy" onclick="setEditCur('jpy')">¥ 日幣 JPY</div>
+        <div class="toggle-btn" id="e-cur-twd" onclick="setEditCur('twd')">NT$ 台幣 TWD</div>
+      </div>
+    </div>
+    <div class="mb12">
+      <label class="form-label" id="e-amt-label">金額（日圓）</label>
+      <input class="form-input" id="e-amount" type="number" inputmode="decimal">
+    </div>
+    <div class="form-row mb12">
+      <div>
+        <label class="form-label">類別</label>
+        <select class="form-select" id="e-cat">
+          <option>餐飲</option><option>門票</option><option>藥妝</option>
+          <option>伴手禮</option><option>衣服</option><option>滑雪</option><option>其他</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">日期</label>
+        <select class="form-select" id="e-date">
+          <option value="3/12">3/12 週三</option>
+          <option value="3/13">3/13 週四</option>
+          <option value="3/14">3/14 週五</option>
+          <option value="3/15">3/15 週六</option>
+          <option value="3/16">3/16 週日</option>
+          <option value="3/17">3/17 週一</option>
+        </select>
+      </div>
+    </div>
+    <div class="mb12">
+      <label class="form-label">扣款來源</label>
+      <div class="toggle-group wrap">
+        <div class="toggle-btn" id="e-pay-華南信用卡" onclick="setEditPay('華南信用卡')">華南信用卡</div>
+        <div class="toggle-btn" id="e-pay-台新信用卡" onclick="setEditPay('台新信用卡')">台新信用卡</div>
+        <div class="toggle-btn" id="e-pay-現金" onclick="setEditPay('現金')">現金</div>
+      </div>
+    </div>
+    <div class="mb12">
+      <label class="form-label">誰的消費</label>
+      <div class="toggle-group wrap">
+        <div class="toggle-btn" id="e-per-共同" onclick="setEditPer('共同')">共同</div>
+        <div class="toggle-btn" id="e-per-小言" onclick="setEditPer('小言')">小言</div>
+        <div class="toggle-btn" id="e-per-Janice" onclick="setEditPer('Janice')">Janice</div>
+        <div class="toggle-btn" id="e-per-朋友" onclick="setEditPer('朋友')">朋友</div>
+      </div>
+    </div>
+    <div class="mb12">
+      <label class="form-label">備註</label>
+      <textarea class="form-input" id="e-note" rows="3"></textarea>
+    </div>
+    <button class="btn-submit" onclick="saveEdit()">儲存修改</button>
+  </div>
+</div>
+
 <script>
 const DAYS = ['3/12','3/13','3/14','3/15','3/16','3/17'];
 const CAT_ICONS = {餐飲:'🍜',門票:'🎟️',藥妝:'💊',伴手禮:'🎁',衣服:'👘',滑雪:'⛷️',其他:'📦'};
@@ -529,7 +603,7 @@ function setPay(p) {
 
 function setPer(p) {
   curPerson = p;
-  ['共同','小言','Janice','大家'].forEach(x => {
+  ['共同','小言','Janice','朋友'].forEach(x => {
     document.getElementById('per-'+x).className = 'toggle-btn' + (x===p?' active-purple':'');
   });
 }
@@ -583,6 +657,9 @@ function entryHTML(e, showDel=false) {
   const jpy = toJPY(e);
   const twd = toTWD(e);
   const payClass = e.payment==='現金' ? 'badge-cash' : 'badge-card';
+  const noteHTML = e.note ? (e.note.length > 20
+    ? `<div class="entry-note-toggle" onclick="toggleNote(this)">${e.note.slice(0,20)}… 展開</div><div style="display:none;font-size:11px;color:var(--text2);margin-top:2px;word-break:break-all;">${e.note}</div>`
+    : `<div style="font-size:11px;color:var(--text2);margin-top:2px;">${e.note}</div>`) : '';
   return `<div class="entry">
     <div class="entry-icon">${CAT_ICONS[e.category]||'📦'}</div>
     <div class="entry-info">
@@ -591,14 +668,106 @@ function entryHTML(e, showDel=false) {
         <span class="badge badge-person">${e.person}</span>
         <span class="badge ${payClass}">${e.payment}</span>
       </div>
-      ${e.note ? `<div class="entry-note">${e.note}</div>` : ''}
+      ${noteHTML}
     </div>
     <div class="entry-right">
       <div class="entry-jpy">¥${jpy.toLocaleString()}</div>
       <div class="entry-twd">NT$${twd.toLocaleString()}</div>
-      ${showDel ? `<div class="entry-del" onclick="deleteEntry(${e.id})">刪除</div>` : ''}
+      ${showDel ? `<div style="display:flex;gap:8px;margin-top:4px;justify-content:flex-end;">
+        <div class="entry-del" onclick="openEdit(${e.id})" style="color:var(--blue);">編輯</div>
+        <div class="entry-del" onclick="deleteEntry(${e.id})">刪除</div>
+      </div>` : ''}
     </div>
   </div>`;
+}
+
+function toggleNote(el) {
+  const full = el.nextElementSibling;
+  if (full.style.display==='none') {
+    full.style.display='block';
+    el.textContent = el.textContent.replace('展開','收起');
+  } else {
+    full.style.display='none';
+    el.textContent = el.textContent.replace('收起','展開');
+  }
+}
+
+let editingId = null;
+let editCurrency = 'jpy';
+let editPayment = '華南信用卡';
+let editPerson = '共同';
+
+function openEdit(id) {
+  const e = entries.find(x=>x.id===id);
+  if (!e) return;
+  editingId = id;
+  editCurrency = e.currency;
+  editPayment = e.payment;
+  editPerson = e.person;
+  document.getElementById('e-name').value = e.name;
+  document.getElementById('e-amount').value = e.amount;
+  document.getElementById('e-cat').value = e.category;
+  document.getElementById('e-date').value = e.date;
+  document.getElementById('e-note').value = e.note||'';
+  setEditCur(e.currency);
+  setEditPay(e.payment);
+  setEditPer(e.person);
+  document.getElementById('edit-modal').style.display='flex';
+}
+
+function closeEdit() {
+  document.getElementById('edit-modal').style.display='none';
+  editingId = null;
+}
+
+function closeEditIfOutside(ev) {
+  if (ev.target.id==='edit-modal') closeEdit();
+}
+
+function setEditCur(c) {
+  editCurrency = c;
+  document.getElementById('e-cur-jpy').className = 'toggle-btn' + (c==='jpy'?' active-red':'');
+  document.getElementById('e-cur-twd').className = 'toggle-btn' + (c==='twd'?' active-red':'');
+  document.getElementById('e-amt-label').textContent = c==='jpy'?'金額（日圓）':'金額（台幣）';
+}
+
+function setEditPay(p) {
+  editPayment = p;
+  ['華南信用卡','台新信用卡','現金'].forEach(x => {
+    document.getElementById('e-pay-'+x).className = 'toggle-btn' + (x===p?' active-blue':'');
+  });
+}
+
+function setEditPer(p) {
+  editPerson = p;
+  ['共同','小言','Janice','朋友'].forEach(x => {
+    document.getElementById('e-per-'+x).className = 'toggle-btn' + (x===p?' active-purple':'');
+  });
+}
+
+function saveEdit() {
+  if (!editingId) return;
+  const name = document.getElementById('e-name').value.trim();
+  const amount = parseFloat(document.getElementById('e-amount').value);
+  if (!name) { showToast('請填寫消費名稱'); return; }
+  if (!amount || amount <= 0) { showToast('請填寫金額'); return; }
+  const idx = entries.findIndex(x=>x.id===editingId);
+  if (idx===-1) return;
+  entries[idx] = {
+    ...entries[idx],
+    name, amount,
+    currency: editCurrency,
+    category: document.getElementById('e-cat').value,
+    date: document.getElementById('e-date').value,
+    payment: editPayment,
+    person: editPerson,
+    note: document.getElementById('e-note').value.trim()
+  };
+  save();
+  closeEdit();
+  showToast('已更新！');
+  updateAll();
+  renderDetail();
 }
 
 function renderHome() {
@@ -697,7 +866,7 @@ function renderAnalysis() {
   ].map(([n,v])=>`<div class="stat-row"><span class="stat-name">${n}</span><span class="stat-val">${v}</span></div>`).join('');
 
   // Person stats
-  const perT = {'共同':0,'小言':0,'Janice':0,'大家':0};
+  const perT = {'共同':0,'小言':0,'Janice':0,'朋友':0};
   entries.forEach(e=>{ perT[e.person]=(perT[e.person]||0)+toJPY(e); });
   document.getElementById('per-stats').innerHTML = Object.entries(perT)
     .map(([n,v])=>`<div class="stat-row"><span class="stat-name">${n}</span><span class="stat-val">¥${v.toLocaleString()}</span></div>`).join('');
